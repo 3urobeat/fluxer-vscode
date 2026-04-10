@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-10 18:19:16
+ * Last Modified: 2026-04-10 18:20:19
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -127,8 +127,20 @@ async function updatePresence(rethrow?: boolean) {
  */
 export function activate(context: vscode.ExtensionContext) {
 
-	console.debug("Extension activated");
+    console.debug("Extension activated!");
 
+    // Register 'update-presence' command specified in package.json
+    const disposable = vscode.commands.registerCommand("fluxer-vscode.update-presence", () => {
+
+        // Display notification
+        vscode.window.showInformationMessage("Updating status now...");
+
+        updatePresence(true)
+            .then(() => vscode.window.showInformationMessage("Successfully sent status update to Fluxer!"));
+
+    });
+
+    context.subscriptions.push(disposable);
 }
 
 
