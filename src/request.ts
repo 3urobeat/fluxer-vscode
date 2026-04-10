@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:15
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-10 21:07:40
+ * Last Modified: 2026-04-10 21:59:24
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -94,27 +94,26 @@ async function sendRequest(authToken: string, payload: object) {
 
 /**
  * Sends presence update to Fluxer API
- * @param rethrow Optional: Whether any error should be rethrown for parent to handle again
+ * @throws Throws Error on failure
+ * @param activityText Activity text to send
  */
-export async function updatePresence(rethrow?: boolean) {
+export async function updatePresence(activityText: string) {
+
+    // Construct presence data to send
+    const statusData: CustomStatusPayload = {
+        text: activityText,
+        expires_at: new Date(Date.now() + 300000).toISOString() // eslint-disable-line camelcase
+    };
 
     try {
-        const statusData: CustomStatusPayload = {
-            text: "",
-            expires_at: new Date(Date.now() + 300000).toISOString() // eslint-disable-line camelcase
-        };
         await sendRequest("", { "custom_status": statusData });
-
         console.debug("Successfully sent status update to Fluxer API!");
 
     } catch (error) {
 
         console.error("Failed to send status update to Fluxer:", error);
         vscode.window.showErrorMessage("Failed to send status update to Fluxer API: " + error);
-
-        if (rethrow) {
-            throw error;
-        }
+        throw error; // Rethrow
     }
 
 }
