@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 00:33:02
+ * Last Modified: 2026-04-11 00:38:17
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -25,6 +25,12 @@ import { getActivityText } from "./activity";
 /**
  * VsCode/ium extension main file
  */
+
+
+const statusUpdateInterval: number = 10000;
+
+let lastStatusText: string;
+let statusUpdateHandler: NodeJS.Timeout | undefined;
 
 
 /**
@@ -63,6 +69,30 @@ export function activate(context: vscode.ExtensionContext) {
     // Register commands
     registerCommands(context);
 
+    // Register periodic update interval
+    if (!statusUpdateHandler) {
+        statusUpdateHandler = setInterval(async () => {
+
+            const activityText = await getActivityText();
+
+            if (activityText === lastStatusText) {
+                console.debug("Current presence matches last sent status, avoiding update...");
+                return;
+            }
+
+            console.log(`New activity detected, updating status from '${lastStatusText}' to '${activityText}'...`);
+
+            updatePresence(activityText)
+                .then(() => {
+                    lastStatusText = activityText;
+                })
+                .catch(() => {}); // Exception is already handled by child
+
+        }, statusUpdateInterval);
+
+        console.debug(`Registered status update handler which runs every ${statusUpdateInterval}ms`);
+    }
+
 }
 
 
@@ -72,6 +102,13 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
 
     // TODO: Clear status
+
+    // Disable periodic check interval
+    if (statusUpdateHandler) {
+        statusUpdateHandler.close();
+        statusUpdateHandler = undefined;
+        console.debug("Unregistered status update handler");
+    }
 
     console.log("Extension deactivated");
 
