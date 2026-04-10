@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-10 18:20:19
+ * Last Modified: 2026-04-10 21:07:27
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -18,107 +18,12 @@
 // VS Code extensibility API
 import * as vscode from "vscode";
 
-import https from "https";
-import { IncomingMessage } from "http";
-
-
-const apiUrl = new URL("https://web.fluxer.app/api/v1/users/@me/settings");
-
-/**
- * Sends an API request
- * @param authToken Fluxer auth token to supply
- * @param payload JSON payload to send in request
- * @returns Returns Promise that resolves when the request finishes
- */
-async function sendRequest(authToken: string, payload: object) {
-    return new Promise<void>((resolve, reject) => {
-
-        // Encode payload data
-        const encodedPayload = JSON.stringify(payload);
-
-        // Specify request options
-        const options = {
-            host: apiUrl.host,      // Hostname + Port
-            path: apiUrl.pathname,
-            method: "PATCH",
-            headers: {
-                "Accept": "*/*",
-                "Authorization": authToken,
-                "Content-Type": "application/json",
-                "Content-Length": Buffer.byteLength(encodedPayload),
-                "Origin": "https://web.fluxer.app"
-            },
-            timeout: 10000
-        };
-
-        console.debug("Sending request with payload:", payload);
-
-        // Register request handler
-        const req = https.request(options, (res: IncomingMessage) => {
-            let output = "";
-
-            res.on("data", (chunk) => {
-                output += chunk;
-            });
-
-            res.on("end", () => {
-                console.debug(`Request Response (${res.statusCode}): `, output);
-
-                if (res.statusCode !== 200) { // TODO: Can a success be something else than 200?
-                    return reject(new Error(`API Error (${res.statusCode}): ${output}`));
-                }
-
-                resolve();
-            });
-        });
-
-        req.on("error", (err) => {
-            reject(err);
-        });
-
-        req.on("timeout", () => {
-            reject(new Error("Request timed out"));
-        });
-
-        // Write payload data
-        req.write(encodedPayload);
-        req.end();
-
-    });
-}
-
-
-// Data expected in status api request
-interface CustomStatusPayload {
-    text: string,
-    expires_at: string // ISO stringified Timestamp
-}
+import { updatePresence } from "./request";
 
 
 /**
- * Sends presence update to Fluxer API
- * @param rethrow Optional: Whether any error should be rethrown for parent to handle again
+ * VsCode/ium extension main file
  */
-async function updatePresence(rethrow?: boolean) {
-
-    try {
-        const statusData: CustomStatusPayload = {
-            text: "",
-            expires_at: new Date(Date.now() + 300000).toISOString() // eslint-disable-line camelcase
-        };
-        await sendRequest("", { "custom_status": statusData });
-
-        console.debug("Successfully sent status update to Fluxer API!");
-    } catch (error) {
-        console.error("Failed to send status update to Fluxer:", error);
-        vscode.window.showErrorMessage("Failed to send status update to Fluxer API: " + error);
-
-        if (rethrow) {
-            throw error;
-        }
-    }
-
-}
 
 
 /**
