@@ -14,6 +14,14 @@
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fluxer-vscode.update-presence",
+        "title": "Update Status"
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
