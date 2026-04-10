@@ -1,0 +1,38 @@
+{
+  "name": "fluxer-vscode",
+  "version": "0.0.1",
+  "description": "Update your Fluxer status with your VSCode activity",
+  "author": "3urobeat",
+  "license": "AGPL-3.0",
+  "homepage": "https://github.com/3urobeat",
+  "repository": "https://github.com/3urobeat/fluxer-vscode",
+  "engines": {
+    "vscode": "^1.112.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/vscode": "^1.115.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.58.1",
+    "eslint": "^10.2.0",
+    "eslint-plugin-jsdoc": "^62.9.0",
+    "globals": "^17.4.0",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
