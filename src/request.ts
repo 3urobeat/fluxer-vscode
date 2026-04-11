@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:15
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 17:38:56
+ * Last Modified: 2026-04-11 18:06:31
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -27,10 +27,19 @@ import { getActivityText } from "./activity";
  * Handles interfacing with Fluxer API
  */
 
-let lastStatusText: string;
+let lastStatusText:      string;
 let lastUpdateTimestamp: number;
 
 const apiUrl = new URL("https://web.fluxer.app/api/v1/users/@me/settings");
+
+
+/**
+ * Get the last sent status text
+ * @returns Returns string or undefined if no status text was sent yet
+ */
+export function getLastStatusText(): string | undefined {
+    return lastStatusText;
+}
 
 
 /**
@@ -138,10 +147,9 @@ export async function updatePresence(force?: boolean): Promise<unknown> {
     const activityText = await getActivityText();
 
     // Defer update if last sent activity matches current and an update has been sent in the last statusUntil ms
-    if (!force
-        && activityText === lastStatusText
-        && lastUpdateTimestamp
-        && lastUpdateTimestamp + getExtensionConfiguration().statusUntil > Date.now()) {
+    const recentlyUpdated = lastUpdateTimestamp && lastUpdateTimestamp + getExtensionConfiguration().statusUntil > Date.now();
+
+    if (!force && activityText === lastStatusText && recentlyUpdated) {
         console.debug("Current presence matches last sent status, avoiding update...");
         return;
     }

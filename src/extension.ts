@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 17:40:20
+ * Last Modified: 2026-04-11 18:07:15
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -19,7 +19,7 @@
 import * as vscode from "vscode";
 
 import { getExtensionConfiguration, isTokenSet } from "./config";
-import { sendPresenceUpdate, updatePresence } from "./request";
+import { getLastStatusText, sendPresenceUpdate, updatePresence } from "./request";
 
 
 /**
@@ -103,9 +103,11 @@ export function activate(context: vscode.ExtensionContext) {
  */
 export async function deactivate() {
 
-    // Clear status. Ignore errors because whatyagonnadonow
+    // Clear status if we ever sent one. Ignore errors because whatyagonnadonow
     try {
-        await sendPresenceUpdate("");
+        if (getLastStatusText() !== undefined) {
+            await sendPresenceUpdate("");
+        }
     } catch(err) {} // eslint-disable-line
 
     // Disable periodic check interval
