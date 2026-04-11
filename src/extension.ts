@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 18:09:47
+ * Last Modified: 2026-04-11 19:26:49
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -19,7 +19,7 @@
 import * as vscode from "vscode";
 
 import { getExtensionConfiguration, isTokenSet } from "./config";
-import { getLastStatusText, sendPresenceUpdate, updatePresence } from "./request";
+import { getLastStatusText, getLastUpdateTimestamp, sendPresenceUpdate, updatePresence } from "./request";
 
 
 /**
@@ -28,6 +28,43 @@ import { getLastStatusText, sendPresenceUpdate, updatePresence } from "./request
 
 
 let statusUpdateHandler: NodeJS.Timeout | undefined;
+let statusBarItem: vscode.StatusBarItem | undefined;
+
+
+/**
+ * Updates status bar item (if not disabled)
+ * @param active Whether connection to Fluxer is established
+ */
+function updateStatusBarItem(active: boolean) {
+    if (statusBarItem) {
+        statusBarItem?.show();
+
+        // Set text depending on whether connection is active
+        if (active) {
+            statusBarItem.text = "$(check) Connected to Fluxer";
+        } else {
+            statusBarItem.text = "$(close) Disconnected from Fluxer";
+        }
+
+        // Set last update time tooltip
+        let   lastRefreshText = "never";
+        const lastRefresh     = getLastUpdateTimestamp();
+
+        if (lastRefresh) {
+            let last = (Date.now() - lastRefresh) / 1000;
+            let unit = "seconds ago";
+
+            if (last > 60) {
+                last /= 60;
+                unit = "minutes ago";
+            }
+
+            lastRefreshText = `${Math.round(last)} ${unit}`;
+        }
+
+        statusBarItem.tooltip = `Last Status Update: ${lastRefreshText}. Click to update status now.`;
+    }
+}
 
 
 /**
@@ -45,9 +82,13 @@ function registerCommands(context: vscode.ExtensionContext) {
 
         vscode.window.showInformationMessage("Updating status now...");
 
-        await updatePresence(true); // Force update and let exception fall through to extension host
-
-        vscode.window.showInformationMessage("Successfully sent status update to Fluxer!");
+        // Force update and show status bar text on success
+        updatePresence(true)
+            .then(()  => {
+                updateStatusBarItem(true);
+                vscode.window.showInformationMessage("Successfully sent status update to Fluxer!");
+            })
+            .catch(() => updateStatusBarItem(false)); // Parent already shows error notification, no need to do that here again
     });
 
     context.subscriptions.push(disposable);
@@ -56,8 +97,9 @@ function registerCommands(context: vscode.ExtensionContext) {
 
 /**
  * Initializes the extension
+ * @param context
  */
-function initializeExtension() {
+function initializeExtension(context: vscode.ExtensionContext) {
     if (!getExtensionConfiguration().enable) {
         console.debug("Extension is disabled in settings, ignoring...");
         return;
@@ -68,14 +110,21 @@ function initializeExtension() {
         return;
     }
 
-    // Register status update handler if none is registered currently and feature is enabled
+    // Register statusBar item if none is currently registered
+    if (!statusBarItem) {
+        statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+        updateStatusBarItem(false);
+        statusBarItem.command = "fluxer-vscode.update-presence";
+        context.subscriptions.push(statusBarItem);
+    }
+
     if (!statusUpdateHandler) {
         if (getExtensionConfiguration().updateCheckInterval > 0) {
-
             statusUpdateHandler = setInterval(async () => {
 
-                await updatePresence()
-                    .catch(() => {}); // Exception is already handled by child
+                updatePresence()
+                    .then(()  => updateStatusBarItem(true))
+                    .catch(() => updateStatusBarItem(false));
 
             }, getExtensionConfiguration().updateCheckInterval);
 
@@ -112,6 +161,12 @@ async function uninitializeExtension() {
         statusUpdateHandler = undefined;
         console.debug("Unregistered status update handler");
     }
+
+    // Hide status bar item again
+    if (statusBarItem) {
+        statusBarItem.hide();
+        statusBarItem = undefined;
+    }
 }
 
 
@@ -126,15 +181,16 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommands(context);
 
     // Initialize the extension
-    initializeExtension();
+    initializeExtension(context);
 
     // Listen for configuration changes and reinitialize the extension
     context.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration(async (event) => {
             if (event.affectsConfiguration("fluxer")) {
                 console.log("Configuration changed, reinitializing extension...");
+
                 await uninitializeExtension();
-                initializeExtension();
+                initializeExtension(context);
             }
         })
     );
