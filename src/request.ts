@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:15
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 18:14:21
+ * Last Modified: 2026-04-11 19:21:59
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -39,6 +39,15 @@ const apiUrl = new URL("https://web.fluxer.app/api/v1/users/@me/settings");
  */
 export function getLastStatusText(): string | undefined {
     return lastStatusText;
+}
+
+
+/**
+ * Get the last status update timestamp
+ * @returns Returns timestamp when the last successful request was sent
+ */
+export function getLastUpdateTimestamp(): number {
+    return lastUpdateTimestamp;
 }
 
 
@@ -80,7 +89,8 @@ async function sendApiRequest(authToken: string, payload: object) {
             });
 
             res.on("end", () => {
-                console.debug(`Request Response (${res.statusCode}): `, output);
+                //console.debug(`Request Response (${res.statusCode}): `, output);
+                console.debug("Request Response: " + res.statusCode);
 
                 if (res.statusCode !== 200) { // TODO: Can a success be something else than 200?
                     return reject(new Error(`API Error (${res.statusCode}): ${output}`));
@@ -128,6 +138,9 @@ export async function sendPresenceUpdate(activityText: string) {
         await sendApiRequest(token, { "custom_status": statusData });
         console.debug("Successfully sent status update to Fluxer API!");
 
+        lastStatusText      = activityText;
+        lastUpdateTimestamp = Date.now();
+
     } catch (error) {
 
         console.error("Failed to send status update to Fluxer:", error);
@@ -160,7 +173,5 @@ export async function updatePresence(force?: boolean): Promise<unknown> {
 
     // Send request
     await sendPresenceUpdate(activityText);
-    lastStatusText = activityText;
-    lastUpdateTimestamp = Date.now();
 
 }
