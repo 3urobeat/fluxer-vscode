@@ -4,7 +4,7 @@
  * Created Date: 2026-04-11 17:26:09
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 17:26:43
+ * Last Modified: 2026-04-11 17:56:32
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -29,7 +29,7 @@ export function getExtensionConfiguration(): ExtensionConfig {
     Object.keys(curSet).forEach((key) => {
         const override = vscode.workspace.getConfiguration("fluxer").get(key);
 
-        if (override) {
+        if (override !== undefined) {
             (curSet[key as keyof ExtensionConfig] as unknown as keyof ExtensionConfig) = override as unknown as keyof ExtensionConfig;
         } else {
             console.debug(`Key '${key}' is missing from user config, using default`);
