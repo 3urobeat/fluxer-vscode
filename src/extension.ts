@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 16:55:12
+ * Last Modified: 2026-04-11 17:16:38
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -113,6 +113,7 @@ function registerCommands(context: vscode.ExtensionContext) {
  */
 export function activate(context: vscode.ExtensionContext) {
 
+    // Check if extension is disabled in our settings
     if (!getExtensionConfiguration().enable) {
         console.debug("Extension got activated but is disabled in settings, ignoring...");
         return;
@@ -133,8 +134,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (getExtensionConfiguration().updateCheckInterval > 0) {
             statusUpdateHandler = setInterval(async () => {
 
+                // Get current activity
                 const activityText = await getActivityText();
 
+                // Defer update if last sent activity matches current and an update has been sent in the last statusUntil ms
                 if (activityText === lastStatusText
                     && lastUpdateTimestamp
                     && lastUpdateTimestamp + getExtensionConfiguration().statusUntil > Date.now()) {
@@ -144,6 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
 
                 console.log(`New activity detected, updating status from '${lastStatusText}' to '${activityText}'...`);
 
+                // Send request
                 updatePresence(activityText)
                     .then(() => {
                         lastStatusText = activityText;
@@ -165,9 +169,14 @@ export function activate(context: vscode.ExtensionContext) {
 /**
  * Called when extension is activated
  */
-export function deactivate() {
+export async function deactivate() {
 
-    // TODO: Clear status
+    // Clear status and reset tracking variables. Ignore errors because whatyagonnadonow
+    try {
+        await updatePresence("");
+        lastStatusText = "";
+        lastUpdateTimestamp = 0;
+    } catch(err) {} // eslint-disable-line
 
     // Disable periodic check interval
     if (statusUpdateHandler) {
