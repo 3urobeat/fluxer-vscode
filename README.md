@@ -11,7 +11,13 @@
 
 &nbsp;
 
-<!-- Extension available to download on [Visual Studio Marketplace]() and [OpenVSX Marketplace](). -->
+<div align="center">
+
+[![vs-marketplace](https://img.shields.io/badge/Visual_Studio_Marketplace-1.0.0-blue?style=for-the-badge)](https://marketplace.visualstudio.com/items?itemName=3urobeat.fluxer-vscode)
+[![openvsx-marketplace](https://img.shields.io/badge/OpenVSX_Marketplace-1.0.0-blue?style=for-the-badge)](https://open-vsx.org/extension/3urobeat/fluxer-vscode)
+[![vsix-file](https://img.shields.io/badge/VSIX_File-1.0.0-blue?style=for-the-badge)](https://github.com/3urobeat/fluxer-vscode/releases/latest)
+
+</div>
 
 &nbsp;
 
@@ -32,7 +38,7 @@
 <a id="installing"></a>
 
 ## Installing
-Open VSCode and install the extension from your VSCode's Marketplace or the VSIX file.  
+Open VSCode and install the extension from the [Visual Studio](https://marketplace.visualstudio.com/items?itemName=3urobeat.fluxer-vscode) or [OpenVSX](https://open-vsx.org/extension/3urobeat/fluxer-vscode) Marketplace or the [VSIX](https://github.com/3urobeat/fluxer-vscode/releases/latest) file.  
 An error notification regarding a missing user token will appear. Click the notification's `Open Settings` button.
 
 You need to provide your Fluxer user token so the extension can make the API requests to update your account's status.  

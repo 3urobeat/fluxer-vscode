@@ -98,8 +98,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src",
-    "package": "vsce package",
-    "vscePublish": "vsce publish"
+    "package": "vsce package"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
