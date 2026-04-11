@@ -4,7 +4,7 @@
  * Created Date: 2026-04-11 17:26:09
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 17:56:32
+ * Last Modified: 2026-04-11 20:47:29
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -16,7 +16,17 @@
 
 
 import * as vscode from "vscode";
-import { defaultExtensionConfig, ExtensionConfig } from "./model";
+import { defaultExtensionConfig, type ExtensionConfig, type ExtensionConfigMapVal } from "./model";
+
+
+/**
+ * Updates an extension configuration setting globally
+ * @param key Setting to change
+ * @param val Value to change setting to. Pass `undefined` to unset
+ */
+export function setExtensionConfiguration(key: ExtensionConfigMapVal, val: unknown | undefined) {
+    vscode.workspace.getConfiguration("fluxer").update(key.replace("fluxer.", ""), val, vscode.ConfigurationTarget.Global);
+}
 
 
 /**

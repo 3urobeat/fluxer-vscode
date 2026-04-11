@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 19:26:49
+ * Last Modified: 2026-04-11 20:48:31
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -18,8 +18,9 @@
 // VS Code extensibility API
 import * as vscode from "vscode";
 
-import { getExtensionConfiguration, isTokenSet } from "./config";
+import { getExtensionConfiguration, isTokenSet, setExtensionConfiguration } from "./config";
 import { getLastStatusText, getLastUpdateTimestamp, sendPresenceUpdate, updatePresence } from "./request";
+import { ExtensionConfigMap } from "./model";
 
 
 /**
@@ -74,8 +75,16 @@ function updateStatusBarItem(active: boolean) {
 function registerCommands(context: vscode.ExtensionContext) {
     console.debug("Registering commands...");
 
-    // Register 'update-presence' command specified in package.json
-    const disposable = vscode.commands.registerCommand("fluxer-vscode.update-presence", async () => {
+    // Register commands specified in package.json
+    const enableCmd = vscode.commands.registerCommand("fluxer.enable", async () => {
+        setExtensionConfiguration(ExtensionConfigMap.enable, true); // Triggers configuration update event which is handled below
+    });
+
+    const disableCmd = vscode.commands.registerCommand("fluxer.disable", async () => {
+        setExtensionConfiguration(ExtensionConfigMap.enable, false); // Triggers configuration update event which is handled below
+    });
+
+    const updatePresenceCmd = vscode.commands.registerCommand("fluxer.update-presence", async () => {
         if (!isTokenSet()) {
             return;
         }
@@ -91,7 +100,9 @@ function registerCommands(context: vscode.ExtensionContext) {
             .catch(() => updateStatusBarItem(false)); // Parent already shows error notification, no need to do that here again
     });
 
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(enableCmd);
+    context.subscriptions.push(disableCmd);
+    context.subscriptions.push(updatePresenceCmd);
 }
 
 
@@ -114,7 +125,7 @@ function initializeExtension(context: vscode.ExtensionContext) {
     if (!statusBarItem) {
         statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
         updateStatusBarItem(false);
-        statusBarItem.command = "fluxer-vscode.update-presence";
+        statusBarItem.command = "fluxer.update-presence";
         context.subscriptions.push(statusBarItem);
     }
 
@@ -133,10 +144,10 @@ function initializeExtension(context: vscode.ExtensionContext) {
             console.debug("statusUpdateHandler is disabled in settings, ignoring...");
 
             // Send informational notification and provide button to update status once now
-            vscode.window.showInformationMessage("Automatic status updates are disabled in settings. To update your status, send the command 'fluxer-vscode.update-presence'.", "Update Status now")
+            vscode.window.showInformationMessage("Automatic status updates are disabled in settings. To update your status, send the command 'fluxer.update-presence'.", "Update Status now")
                 .then((val) => {
                     if (val === "Update Status now") {
-                        vscode.commands.executeCommand("fluxer-vscode.update-presence");
+                        vscode.commands.executeCommand("fluxer.update-presence");
                     }
                 });
         }
