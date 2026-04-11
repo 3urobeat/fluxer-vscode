@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 18:07:15
+ * Last Modified: 2026-04-11 18:09:47
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -35,7 +35,6 @@ let statusUpdateHandler: NodeJS.Timeout | undefined;
  * @param context
  */
 function registerCommands(context: vscode.ExtensionContext) {
-
     console.debug("Registering commands...");
 
     // Register 'update-presence' command specified in package.json
@@ -52,33 +51,24 @@ function registerCommands(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(disposable);
-
 }
 
 
 /**
- * Called when extension is activated
- * @param context
+ * Initializes the extension
  */
-export function activate(context: vscode.ExtensionContext) {
-
-    // Check if extension is disabled in our settings
+function initializeExtension() {
     if (!getExtensionConfiguration().enable) {
-        console.debug("Extension got activated but is disabled in settings, ignoring...");
+        console.debug("Extension is disabled in settings, ignoring...");
         return;
     }
 
-    console.log("Extension activated!");
-
-    // Register commands
-    registerCommands(context);
-
-    // Check if token is set
+    // Display error notification and abort if no token is set
     if (!isTokenSet()) {
         return;
     }
 
-    // Register periodic update interval (if enabled)
+    // Register status update handler if none is registered currently and feature is enabled
     if (!statusUpdateHandler) {
         if (getExtensionConfiguration().updateCheckInterval > 0) {
 
@@ -92,17 +82,23 @@ export function activate(context: vscode.ExtensionContext) {
             console.debug(`Registered status update handler which runs every ${getExtensionConfiguration().updateCheckInterval}ms`);
         } else {
             console.debug("statusUpdateHandler is disabled in settings, ignoring...");
+
+            // Send informational notification and provide button to update status once now
+            vscode.window.showInformationMessage("Automatic status updates are disabled in settings. To update your status, send the command 'fluxer-vscode.update-presence'.", "Update Status now")
+                .then((val) => {
+                    if (val === "Update Status now") {
+                        vscode.commands.executeCommand("fluxer-vscode.update-presence");
+                    }
+                });
         }
     }
-
 }
 
 
 /**
- * Called when extension is activated
+ * Uninitializes the extension
  */
-export async function deactivate() {
-
+async function uninitializeExtension() {
     // Clear status if we ever sent one. Ignore errors because whatyagonnadonow
     try {
         if (getLastStatusText() !== undefined) {
@@ -116,7 +112,39 @@ export async function deactivate() {
         statusUpdateHandler = undefined;
         console.debug("Unregistered status update handler");
     }
+}
 
+
+/**
+ * Called once when the extension is activated
+ * @param context
+ */
+export function activate(context: vscode.ExtensionContext) {
+    console.log("Extension activated!");
+
+    // Register commands
+    registerCommands(context);
+
+    // Initialize the extension
+    initializeExtension();
+
+    // Listen for configuration changes and reinitialize the extension
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeConfiguration(async (event) => {
+            if (event.affectsConfiguration("fluxer")) {
+                console.log("Configuration changed, reinitializing extension...");
+                await uninitializeExtension();
+                initializeExtension();
+            }
+        })
+    );
+}
+
+
+/**
+ * Called when the extension is deactivated
+ */
+export async function deactivate() {
+    await uninitializeExtension();
     console.log("Extension deactivated");
-
 }
