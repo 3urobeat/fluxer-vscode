@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:15
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 18:06:31
+ * Last Modified: 2026-04-11 18:14:21
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -19,7 +19,7 @@ import * as vscode from "vscode";
 import https from "https";
 import { IncomingMessage } from "http";
 import { CustomStatusPayload } from "./model";
-import { getExtensionConfiguration } from "./config";
+import { getExtensionConfiguration, isTokenSet } from "./config";
 import { getActivityText } from "./activity";
 
 
@@ -112,6 +112,9 @@ async function sendApiRequest(authToken: string, payload: object) {
  * @param activityText Activity text to send
  */
 export async function sendPresenceUpdate(activityText: string) {
+    if (!isTokenSet()) {
+        throw new Error("No token set");
+    }
 
     // Construct presence data to send
     const statusData: CustomStatusPayload = {
@@ -131,7 +134,6 @@ export async function sendPresenceUpdate(activityText: string) {
         vscode.window.showErrorMessage("Failed to send status update to Fluxer API: " + error);
         throw error; // Rethrow
     }
-
 }
 
 
