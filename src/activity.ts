@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:49:14
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 14:44:21
+ * Last Modified: 2026-04-11 17:27:03
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -17,7 +17,7 @@
 
 import { window, workspace } from "vscode";
 import { basename } from "path";
-import { getExtensionConfiguration } from "./extension";
+import { getExtensionConfiguration } from "./config";
 
 
 /**
