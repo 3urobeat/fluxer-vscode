@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:24
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 20:43:32
+ * Last Modified: 2026-04-11 21:16:50
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -51,7 +51,8 @@ export interface ExtensionConfig {
         format:       string,
         activityText: string,
         appName:      string,
-        showIdle:     boolean
+        showIdle:     boolean,
+        clearIdleAfter: number
     }
 }
 
@@ -65,7 +66,8 @@ export const ExtensionConfigMap = {
         activityText: "fluxer.status.activityText",
         format:       "fluxer.status.format",
         appName:      "fluxer.status.appName",
-        showIdle:     "fluxer.status.showIdle"
+        showIdle:     "fluxer.status.showIdle",
+        clearIdleAfter: "fluxer.status.clearIdleAfter"
     }
 } as const;
 
@@ -81,6 +83,7 @@ export const defaultExtensionConfig: ExtensionConfig = {
         activityText: configProps[ExtensionConfigMap.status.activityText].default,
         format:       configProps[ExtensionConfigMap.status.format].default,
         appName:      configProps[ExtensionConfigMap.status.appName].default,
-        showIdle:     configProps[ExtensionConfigMap.status.showIdle].default
+        showIdle:     configProps[ExtensionConfigMap.status.showIdle].default,
+        clearIdleAfter: configProps[ExtensionConfigMap.status.clearIdleAfter].default
     }
 };

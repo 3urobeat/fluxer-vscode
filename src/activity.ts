@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:49:14
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 17:27:03
+ * Last Modified: 2026-04-11 21:36:03
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -18,6 +18,8 @@
 import { window, workspace } from "vscode";
 import { basename } from "path";
 import { getExtensionConfiguration } from "./config";
+import { getLastStatusText } from "./request";
+import { ExtensionConfigMap } from "./model";
 
 
 /**
@@ -25,6 +27,7 @@ import { getExtensionConfiguration } from "./config";
  */
 
 const idleText = "Idling";
+let idleStartTimestamp: number | undefined;
 
 
 /**
@@ -80,15 +83,35 @@ export async function getActivityText(): Promise<string> {
     const activeWorkspace = sliceActivity(await getWorkspaceName());
     const activeFile      = activeWorkspace ? undefined : sliceActivity(await getCurrentFileName());
 
-    // Construct activityText string
+    // Construct activity string. Unset idleStartTimestamp if user is active
     let activity;
     if (activeWorkspace) {
         activity = `Editing project '${activeWorkspace}'`;
+        idleStartTimestamp = undefined;
     } else if (activeFile) {
         activity = `Editing file '${activeFile}'`;
-    } else if (getExtensionConfiguration().status.showIdle) {
-        activity = idleText;
+        idleStartTimestamp = undefined;
+    } else {                                // User is inactive, set idle text (if enabled) and set idleStartTimestamp if user just began idling
+        if (getExtensionConfiguration().status.showIdle) {
+            activity = idleText;
+        }
+        if (!idleStartTimestamp) {
+            console.debug("User has started idling");
+            idleStartTimestamp = Date.now();
+        }
     }
+
+    // Check if we shall clear status when user has been idle for a long time and abort
+    const clearIdleAfter = getExtensionConfiguration().status.clearIdleAfter;
+
+    if (clearIdleAfter > 0 && idleStartTimestamp && Date.now() > idleStartTimestamp + clearIdleAfter) {
+        if (getLastStatusText() !== "") {
+            console.info(`Clearing status because '${ExtensionConfigMap.status.clearIdleAfter}' is enabled and user has been idle for ~${Math.round((((Date.now() - idleStartTimestamp) / 1000) / 60) / 60)} minutes...`);
+        }
+        return "";
+    }
+
+    // Put activity string into user specified format
     let activityText;
     if (activity) {
         activityText = getExtensionConfiguration().status.activityText
