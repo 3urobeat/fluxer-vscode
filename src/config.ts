@@ -4,7 +4,7 @@
  * Created Date: 2026-04-11 17:26:09
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 21:21:13
+ * Last Modified: 2026-04-11 22:26:07
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -65,7 +65,7 @@ export function isTokenSet(): boolean {
         vscode.window.showErrorMessage("Please configure your Fluxer token in the extension settings!", "Open Settings")
             .then((val) => {
                 if (val === "Open Settings") {
-                    vscode.commands.executeCommand("workbench.action.openSettings", "fluxer"); // Release: @ext:3urobeat.fluxer-vscode
+                    vscode.commands.executeCommand("workbench.action.openSettings", "@ext:3urobeat.fluxer-vscode");
                 }
             });
     }

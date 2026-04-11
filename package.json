@@ -1,8 +1,11 @@
 {
   "name": "fluxer-vscode",
   "version": "0.0.1",
+  "displayName": "Fluxer VSCode",
   "description": "Update your Fluxer status with your VSCode activity",
   "author": "3urobeat",
+  "publisher": "3urobeat",
+  "icon": "assets/icon.png",
   "license": "AGPL-3.0",
   "homepage": "https://github.com/3urobeat",
   "repository": "https://github.com/3urobeat/fluxer-vscode",
