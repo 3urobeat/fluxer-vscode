@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:15
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 17:26:55
+ * Last Modified: 2026-04-11 17:38:56
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -20,14 +20,18 @@ import https from "https";
 import { IncomingMessage } from "http";
 import { CustomStatusPayload } from "./model";
 import { getExtensionConfiguration } from "./config";
+import { getActivityText } from "./activity";
 
 
 /**
  * Handles interfacing with Fluxer API
  */
 
+let lastStatusText: string;
+let lastUpdateTimestamp: number;
 
 const apiUrl = new URL("https://web.fluxer.app/api/v1/users/@me/settings");
+
 
 /**
  * Sends an API request
@@ -35,7 +39,7 @@ const apiUrl = new URL("https://web.fluxer.app/api/v1/users/@me/settings");
  * @param payload JSON payload to send in request
  * @returns Returns Promise that resolves when the request finishes
  */
-async function sendRequest(authToken: string, payload: object) {
+async function sendApiRequest(authToken: string, payload: object) {
     return new Promise<void>((resolve, reject) => {
 
         // Encode payload data
@@ -98,7 +102,7 @@ async function sendRequest(authToken: string, payload: object) {
  * @throws Throws Error on failure
  * @param activityText Activity text to send
  */
-export async function updatePresence(activityText: string) {
+export async function sendPresenceUpdate(activityText: string) {
 
     // Construct presence data to send
     const statusData: CustomStatusPayload = {
@@ -109,7 +113,7 @@ export async function updatePresence(activityText: string) {
     const token = getExtensionConfiguration().token;
 
     try {
-        await sendRequest(token, { "custom_status": statusData });
+        await sendApiRequest(token, { "custom_status": statusData });
         console.debug("Successfully sent status update to Fluxer API!");
 
     } catch (error) {
@@ -118,5 +122,35 @@ export async function updatePresence(activityText: string) {
         vscode.window.showErrorMessage("Failed to send status update to Fluxer API: " + error);
         throw error; // Rethrow
     }
+
+}
+
+
+/**
+ * Updates Fluxer presence with current activity if necessary
+ * @throws Throws exception when presence send request failed
+ * @param force Optional: Force update now
+ * @returns Returns Promise resolving when done
+ */
+export async function updatePresence(force?: boolean): Promise<unknown> {
+
+    // Get current activity
+    const activityText = await getActivityText();
+
+    // Defer update if last sent activity matches current and an update has been sent in the last statusUntil ms
+    if (!force
+        && activityText === lastStatusText
+        && lastUpdateTimestamp
+        && lastUpdateTimestamp + getExtensionConfiguration().statusUntil > Date.now()) {
+        console.debug("Current presence matches last sent status, avoiding update...");
+        return;
+    }
+
+    console.log(`New activity detected, updating status from '${lastStatusText}' to '${activityText}'...`);
+
+    // Send request
+    await sendPresenceUpdate(activityText);
+    lastStatusText = activityText;
+    lastUpdateTimestamp = Date.now();
 
 }
