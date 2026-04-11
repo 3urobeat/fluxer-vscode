@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:49:14
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 00:11:34
+ * Last Modified: 2026-04-11 14:44:21
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -17,6 +17,7 @@
 
 import { window, workspace } from "vscode";
 import { basename } from "path";
+import { getExtensionConfiguration } from "./extension";
 
 
 /**
@@ -75,19 +76,30 @@ function sliceActivity(str?: string | undefined): string | undefined {
  */
 export async function getActivityText(): Promise<string> {
 
+    // Get active workspace with activeFile fallback
     const activeWorkspace = sliceActivity(await getWorkspaceName());
     const activeFile      = activeWorkspace ? undefined : sliceActivity(await getCurrentFileName());
 
-    // Construct final string
-    let activityText;
+    // Construct activityText string
+    let activity;
     if (activeWorkspace) {
-        activityText = `Editing project '${activeWorkspace}'`;
+        activity = `Editing project '${activeWorkspace}'`;
     } else if (activeFile) {
-        activityText = `Editing file '${activeFile}'`;
-    } else {
-        activityText = idleText;
+        activity = `Editing file '${activeFile}'`;
+    } else if (getExtensionConfiguration().status.showIdle) {
+        activity = idleText;
+    }
+    let activityText;
+    if (activity) {
+        activityText = getExtensionConfiguration().status.activityText
+            .replace("{activity}", activity);
     }
 
-    return `VSCode - ${activityText}`; // TODO: Make configurable
+    // Construct final string
+    const appName = getExtensionConfiguration().status.appName;
+
+    return getExtensionConfiguration().status.format
+        .replace("{appName}", appName)
+        .replace("{activityText}", activityText || "");
 
 }

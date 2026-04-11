@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 13:22:47
+ * Last Modified: 2026-04-11 14:47:08
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -27,8 +27,6 @@ import { defaultExtensionConfig, ExtensionConfig } from "./model";
  * VsCode/ium extension main file
  */
 
-
-const statusUpdateInterval: number = 10000;
 
 let lastStatusText: string;
 let statusUpdateHandler: NodeJS.Timeout | undefined;
@@ -56,6 +54,29 @@ export function getExtensionConfiguration(): ExtensionConfig {
 
 
 /**
+ * Checks whether token is set in settings and displays error notification if not
+ * @returns Returns boolean indicating if token is set, execution should stop if `false`
+ */
+function isTokenSet(): boolean {
+    const token = getExtensionConfiguration().token;
+    const isSet = token !== undefined && token.length > 0;
+
+    if (!isSet) {
+        console.warn("No Fluxer token set!");
+
+        vscode.window.showErrorMessage("Please configure your Fluxer token in the extension settings!", "Open Settings")
+            .then((val) => {
+                if (val === "Open Settings") {
+                    vscode.commands.executeCommand("workbench.action.openSettings", "fluxer"); // Release: @ext:3urobeat.fluxer-vscode
+                }
+            });
+    }
+
+    return isSet;
+}
+
+
+/**
  * Registers VsCode/ium extension commands
  * @param context
  */
@@ -65,14 +86,19 @@ function registerCommands(context: vscode.ExtensionContext) {
 
     // Register 'update-presence' command specified in package.json
     const disposable = vscode.commands.registerCommand("fluxer-vscode.update-presence", async () => {
+        if (!isTokenSet()) {
+            return;
+        }
 
         vscode.window.showInformationMessage("Updating status now...");
 
         const activityText = await getActivityText();
-        updatePresence(activityText); // Let exception fall through to extension host
+        updatePresence(activityText) // Let exception fall through to extension host
+            .then(() => {
+                lastStatusText = activityText;
+            });
 
         vscode.window.showInformationMessage("Successfully sent status update to Fluxer!");
-
     });
 
     context.subscriptions.push(disposable);
@@ -86,33 +112,47 @@ function registerCommands(context: vscode.ExtensionContext) {
  */
 export function activate(context: vscode.ExtensionContext) {
 
+    if (!getExtensionConfiguration().enable) {
+        console.debug("Extension got activated but is disabled in settings, ignoring...");
+        return;
+    }
+
     console.log("Extension activated!");
 
     // Register commands
     registerCommands(context);
 
-    // Register periodic update interval
+    // Check if token is set
+    if (!isTokenSet()) {
+        return;
+    }
+
+    // Register periodic update interval (if enabled)
     if (!statusUpdateHandler) {
-        statusUpdateHandler = setInterval(async () => {
+        if (getExtensionConfiguration().updateCheckInterval > 0) {
+            statusUpdateHandler = setInterval(async () => {
 
-            const activityText = await getActivityText();
+                const activityText = await getActivityText();
 
-            if (activityText === lastStatusText) {
-                console.debug("Current presence matches last sent status, avoiding update...");
-                return;
-            }
+                if (activityText === lastStatusText) {
+                    console.debug("Current presence matches last sent status, avoiding update...");
+                    return;
+                }
 
-            console.log(`New activity detected, updating status from '${lastStatusText}' to '${activityText}'...`);
+                console.log(`New activity detected, updating status from '${lastStatusText}' to '${activityText}'...`);
 
-            updatePresence(activityText)
-                .then(() => {
-                    lastStatusText = activityText;
-                })
-                .catch(() => {}); // Exception is already handled by child
+                updatePresence(activityText)
+                    .then(() => {
+                        lastStatusText = activityText;
+                    })
+                    .catch(() => {}); // Exception is already handled by child
 
-        }, statusUpdateInterval);
+            }, getExtensionConfiguration().updateCheckInterval);
 
-        console.debug(`Registered status update handler which runs every ${statusUpdateInterval}ms`);
+            console.debug(`Registered status update handler which runs every ${getExtensionConfiguration().updateCheckInterval}ms`);
+        } else {
+            console.debug("statusUpdateHandler is disabled in settings, ignoring...");
+        }
     }
 
 }
