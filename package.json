@@ -20,7 +20,48 @@
         "command": "fluxer-vscode.update-presence",
         "title": "Update Status"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Fluxer VSCode Configuration",
+      "type": "object",
+      "properties": {
+        "fluxer.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Controls whether extension is enabled"
+        },
+        "fluxer.updateCheckInterval": {
+          "type": "number",
+          "default": 10000,
+          "description": "Controls interval in ms to check for new activity and update Fluxer status. Set to 0 to disable periodic check."
+        },
+        "fluxer.token": {
+          "type": "string",
+          "default": "",
+          "description": "User Token to authenticate with Fluxer. See project README for more information: https://github.com/3urobeat/fluxer-vscode?tab=readme-ov-file"
+        },
+        "fluxer.status.format": {
+          "type": "string",
+          "default": "🎮 {appName} {activityText}",
+          "description": "Controls formatting of status text. Variables: {appName}, {activityText}"
+        },
+        "fluxer.status.activityText": {
+          "type": "string",
+          "default": "- {activity}",
+          "description": "Controls formatting of activity text to show in status text. Variable {activity} will be replaced by your active workspace or file"
+        },
+        "fluxer.status.appName": {
+          "type": "string",
+          "default": "VSCode",
+          "description": "Application name to show in status text"
+        },
+        "fluxer.status.showIdle": {
+          "type": "boolean",
+          "default": true,
+          "description": "If disabled, extension will clear {activityText} instead of showing 'Idling' when no text editor is active"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

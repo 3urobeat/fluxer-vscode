@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 00:38:17
+ * Last Modified: 2026-04-11 13:22:47
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -20,6 +20,7 @@ import * as vscode from "vscode";
 
 import { updatePresence } from "./request";
 import { getActivityText } from "./activity";
+import { defaultExtensionConfig, ExtensionConfig } from "./model";
 
 
 /**
@@ -31,6 +32,27 @@ const statusUpdateInterval: number = 10000;
 
 let lastStatusText: string;
 let statusUpdateHandler: NodeJS.Timeout | undefined;
+
+
+/**
+ * Gets user configuration of extension
+ */
+export function getExtensionConfiguration(): ExtensionConfig {
+    const curSet: ExtensionConfig = defaultExtensionConfig;
+
+    // Override default values with user settings
+    Object.keys(curSet).forEach((key) => {
+        const override = vscode.workspace.getConfiguration("fluxer").get(key);
+
+        if (override) {
+            (curSet[key as keyof ExtensionConfig] as unknown as keyof ExtensionConfig) = override as unknown as keyof ExtensionConfig;
+        } else {
+            console.debug(`Key '${key}' is missing from user config, using default`);
+        }
+    });
+
+    return curSet as unknown as ExtensionConfig;
+}
 
 
 /**
