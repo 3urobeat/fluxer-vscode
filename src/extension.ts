@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 17:26:49
+ * Last Modified: 2026-04-11 17:40:20
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -18,9 +18,8 @@
 // VS Code extensibility API
 import * as vscode from "vscode";
 
-import { updatePresence } from "./request";
-import { getActivityText } from "./activity";
 import { getExtensionConfiguration, isTokenSet } from "./config";
+import { sendPresenceUpdate, updatePresence } from "./request";
 
 
 /**
@@ -28,8 +27,6 @@ import { getExtensionConfiguration, isTokenSet } from "./config";
  */
 
 
-let lastStatusText: string;
-let lastUpdateTimestamp: number;
 let statusUpdateHandler: NodeJS.Timeout | undefined;
 
 
@@ -49,11 +46,7 @@ function registerCommands(context: vscode.ExtensionContext) {
 
         vscode.window.showInformationMessage("Updating status now...");
 
-        const activityText = await getActivityText();
-        updatePresence(activityText) // Let exception fall through to extension host
-            .then(() => {
-                lastStatusText = activityText;
-            });
+        await updatePresence(true); // Force update and let exception fall through to extension host
 
         vscode.window.showInformationMessage("Successfully sent status update to Fluxer!");
     });
@@ -88,27 +81,10 @@ export function activate(context: vscode.ExtensionContext) {
     // Register periodic update interval (if enabled)
     if (!statusUpdateHandler) {
         if (getExtensionConfiguration().updateCheckInterval > 0) {
+
             statusUpdateHandler = setInterval(async () => {
 
-                // Get current activity
-                const activityText = await getActivityText();
-
-                // Defer update if last sent activity matches current and an update has been sent in the last statusUntil ms
-                if (activityText === lastStatusText
-                    && lastUpdateTimestamp
-                    && lastUpdateTimestamp + getExtensionConfiguration().statusUntil > Date.now()) {
-                    console.debug("Current presence matches last sent status, avoiding update...");
-                    return;
-                }
-
-                console.log(`New activity detected, updating status from '${lastStatusText}' to '${activityText}'...`);
-
-                // Send request
-                updatePresence(activityText)
-                    .then(() => {
-                        lastStatusText = activityText;
-                        lastUpdateTimestamp = Date.now();
-                    })
+                await updatePresence()
                     .catch(() => {}); // Exception is already handled by child
 
             }, getExtensionConfiguration().updateCheckInterval);
@@ -127,11 +103,9 @@ export function activate(context: vscode.ExtensionContext) {
  */
 export async function deactivate() {
 
-    // Clear status and reset tracking variables. Ignore errors because whatyagonnadonow
+    // Clear status. Ignore errors because whatyagonnadonow
     try {
-        await updatePresence("");
-        lastStatusText = "";
-        lastUpdateTimestamp = 0;
+        await sendPresenceUpdate("");
     } catch(err) {} // eslint-disable-line
 
     // Disable periodic check interval
