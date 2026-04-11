@@ -17,8 +17,19 @@
   "contributes": {
     "commands": [
       {
-        "command": "fluxer-vscode.update-presence",
-        "title": "Update Status"
+        "command": "fluxer.enable",
+        "title": "Enable Extension",
+        "category": "Fluxer VSCode"
+      },
+      {
+        "command": "fluxer.disable",
+        "title": "Disable Extension",
+        "category": "Fluxer VSCode"
+      },
+      {
+        "command": "fluxer.update-presence",
+        "title": "Update Status",
+        "category": "Fluxer VSCode"
       }
     ],
     "configuration": {
