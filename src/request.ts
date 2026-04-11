@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:15
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 16:58:02
+ * Last Modified: 2026-04-11 17:26:55
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -19,7 +19,7 @@ import * as vscode from "vscode";
 import https from "https";
 import { IncomingMessage } from "http";
 import { CustomStatusPayload } from "./model";
-import { getExtensionConfiguration } from "./extension";
+import { getExtensionConfiguration } from "./config";
 
 
 /**

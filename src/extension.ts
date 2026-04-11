@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 17:16:38
+ * Last Modified: 2026-04-11 17:26:49
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -20,7 +20,7 @@ import * as vscode from "vscode";
 
 import { updatePresence } from "./request";
 import { getActivityText } from "./activity";
-import { defaultExtensionConfig, ExtensionConfig } from "./model";
+import { getExtensionConfiguration, isTokenSet } from "./config";
 
 
 /**
@@ -31,50 +31,6 @@ import { defaultExtensionConfig, ExtensionConfig } from "./model";
 let lastStatusText: string;
 let lastUpdateTimestamp: number;
 let statusUpdateHandler: NodeJS.Timeout | undefined;
-
-
-/**
- * Gets user configuration of extension
- */
-export function getExtensionConfiguration(): ExtensionConfig {
-    const curSet: ExtensionConfig = defaultExtensionConfig;
-
-    // Override default values with user settings
-    Object.keys(curSet).forEach((key) => {
-        const override = vscode.workspace.getConfiguration("fluxer").get(key);
-
-        if (override) {
-            (curSet[key as keyof ExtensionConfig] as unknown as keyof ExtensionConfig) = override as unknown as keyof ExtensionConfig;
-        } else {
-            console.debug(`Key '${key}' is missing from user config, using default`);
-        }
-    });
-
-    return curSet as unknown as ExtensionConfig;
-}
-
-
-/**
- * Checks whether token is set in settings and displays error notification if not
- * @returns Returns boolean indicating if token is set, execution should stop if `false`
- */
-function isTokenSet(): boolean {
-    const token = getExtensionConfiguration().token;
-    const isSet = token !== undefined && token.length > 0;
-
-    if (!isSet) {
-        console.warn("No Fluxer token set!");
-
-        vscode.window.showErrorMessage("Please configure your Fluxer token in the extension settings!", "Open Settings")
-            .then((val) => {
-                if (val === "Open Settings") {
-                    vscode.commands.executeCommand("workbench.action.openSettings", "fluxer"); // Release: @ext:3urobeat.fluxer-vscode
-                }
-            });
-    }
-
-    return isSet;
-}
 
 
 /**
