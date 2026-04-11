@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 16:26:18
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 14:47:08
+ * Last Modified: 2026-04-11 16:55:12
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -29,6 +29,7 @@ import { defaultExtensionConfig, ExtensionConfig } from "./model";
 
 
 let lastStatusText: string;
+let lastUpdateTimestamp: number;
 let statusUpdateHandler: NodeJS.Timeout | undefined;
 
 
@@ -134,7 +135,9 @@ export function activate(context: vscode.ExtensionContext) {
 
                 const activityText = await getActivityText();
 
-                if (activityText === lastStatusText) {
+                if (activityText === lastStatusText
+                    && lastUpdateTimestamp
+                    && lastUpdateTimestamp + getExtensionConfiguration().statusUntil > Date.now()) {
                     console.debug("Current presence matches last sent status, avoiding update...");
                     return;
                 }
@@ -144,6 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
                 updatePresence(activityText)
                     .then(() => {
                         lastStatusText = activityText;
+                        lastUpdateTimestamp = Date.now();
                     })
                     .catch(() => {}); // Exception is already handled by child
 
