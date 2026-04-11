@@ -1,7 +1,7 @@
 {
   "name": "fluxer-vscode",
-  "version": "0.0.1",
   "displayName": "Fluxer VSCode",
+  "version": "1.0.0",
   "description": "Update your Fluxer status with your VSCode activity",
   "author": "3urobeat",
   "publisher": "3urobeat",
