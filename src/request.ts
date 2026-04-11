@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:15
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 13:18:38
+ * Last Modified: 2026-04-11 16:58:02
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -103,7 +103,7 @@ export async function updatePresence(activityText: string) {
     // Construct presence data to send
     const statusData: CustomStatusPayload = {
         text: activityText,
-        expires_at: new Date(Date.now() + 300000).toISOString() // eslint-disable-line camelcase
+        expires_at: new Date(Date.now() + getExtensionConfiguration().statusUntil).toISOString() // eslint-disable-line camelcase
     };
 
     const token = getExtensionConfiguration().token;

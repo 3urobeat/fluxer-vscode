@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:24
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 14:44:14
+ * Last Modified: 2026-04-11 16:41:50
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -37,6 +37,7 @@ export interface CustomStatusPayload {
 export interface ExtensionConfig {
     enable: boolean,
     updateCheckInterval: number,
+    statusUntil: number,
     token: string,
     status: {
         format: string,
@@ -49,11 +50,12 @@ export interface ExtensionConfig {
 export const defaultExtensionConfig: ExtensionConfig = {
     enable: configProps["fluxer.enable"].default,
     updateCheckInterval: configProps["fluxer.updateCheckInterval"].default,
+    statusUntil: configProps["fluxer.statusUntil"].default,
     token: configProps["fluxer.token"].default,
     status: {
         activityText: configProps["fluxer.status.activityText"].default,
         format: configProps["fluxer.status.format"].default,
         appName: configProps["fluxer.status.appName"].default,
-        showIdle: configProps["fluxer.status.showIdle"].default,
+        showIdle: configProps["fluxer.status.showIdle"].default
     }
 };

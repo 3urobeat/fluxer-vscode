@@ -32,8 +32,13 @@
         },
         "fluxer.updateCheckInterval": {
           "type": "number",
-          "default": 10000,
-          "description": "Controls interval in ms to check for new activity and update Fluxer status. Set to 0 to disable periodic check."
+          "default": 5000,
+          "description": "Controls interval in ms to check for new activity and update Fluxer status. Set to 0 to disable periodic check"
+        },
+        "fluxer.statusUntil": {
+          "type": "number",
+          "default": 300000,
+          "description": "Controls how long your Fluxer status will remain if not updated. Recommended to be left at default"
         },
         "fluxer.token": {
           "type": "string",
