@@ -4,7 +4,7 @@
  * Created Date: 2026-04-11 17:26:09
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 20:47:29
+ * Last Modified: 2026-04-11 21:21:13
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -48,6 +48,7 @@ export function getExtensionConfiguration(): ExtensionConfig {
 
     return curSet as unknown as ExtensionConfig;
 }
+// TODO: This only needs to run once, plugin reinitializes when config changes
 
 
 /**

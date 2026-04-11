@@ -75,6 +75,11 @@
           "type": "boolean",
           "default": true,
           "description": "If disabled, extension will clear {activityText} instead of showing 'Idling' when no text editor is active"
+        },
+        "fluxer.status.clearIdleAfter": {
+          "type": "number",
+          "default": 0,
+          "description": "Time in ms of being idle after which your status should be cleared. Set to 0 to never clear"
         }
       }
     }
