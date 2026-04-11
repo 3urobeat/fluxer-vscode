@@ -9,3 +9,6 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+assets/*
+!assets/icon.png
+.github/ISSUE_TEMPLATE

@@ -4,7 +4,7 @@
  * Created Date: 2026-04-10 20:48:15
  * Author: 3urobeat
  *
- * Last Modified: 2026-04-11 19:21:59
+ * Last Modified: 2026-04-11 20:57:06
  * Modified By: 3urobeat
  *
  * Copyright (c) 2026 3urobeat <https://github.com/3urobeat>
@@ -89,7 +89,7 @@ async function sendApiRequest(authToken: string, payload: object) {
             });
 
             res.on("end", () => {
-                //console.debug(`Request Response (${res.statusCode}): `, output);
+                // Console.debug(`Request Response (${res.statusCode}): `, output);
                 console.debug("Request Response: " + res.statusCode);
 
                 if (res.statusCode !== 200) { // TODO: Can a success be something else than 200?
